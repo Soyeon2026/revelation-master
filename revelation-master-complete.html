@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계시록 마스터 - 요한계시록 암기 학습</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Noto+Serif+KR:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #D4AF37;
+            --deep-purple: #1a0a2e;
+            --royal-purple: #4a148c;
+            --crimson: #8b0000;
+            --light-gold: #f4e4c1;
+            --soft-white: #faf8f3;
+            --shadow-gold: rgba(212, 175, 55, 0.3);
+            --emerald: #2ecc71;
+            --sapphire: #3498db;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Serif KR', serif;
+            background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
+            min-height: 100vh;
+            color: var(--soft-white);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(74, 20, 140, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 헤더 */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', 'Noto Serif KR', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--light-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px var(--shadow-gold);
+            letter-spacing: 2px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--light-gold);
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* 로그인 카드 */
+        .login-card {
+            background: rgba(26, 10, 46, 0.6);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 500px;
+            margin: 80px auto;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card h2 {
+            font-family: 'Cormorant Garamond', 'Noto Serif KR', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .login-card p {
+            color: var(--light-gold);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, var(--gold) 0%, #c99b2e 100%);
+            color: var(--deep-purple);
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+        }
+
+        /* 대시보드 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(26, 10, 46, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .stat-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 5px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: var(--light-gold);
+            opacity: 0.8;
+        }
+
+        /* 일일 목표 카드 */
+        .daily-goal-card {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(26, 10, 46, 0.5) 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(46, 204, 113, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out 0.1s backwards;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .goal-header h3 {
+            font-family: 'Cormorant Garamond', 'Noto Serif KR', serif;
+            font-size: 1.8rem;
+            color: var(--emerald);
+        }
+
+        .goal-status {
+            font-size: 1.1rem;
+            color: var(--light-gold);
+        }
+
+        .goal-items {
+            display: grid;
+            gap: 15px;
+        }
+
+        .goal-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .goal-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--emerald);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .goal-checkbox.completed {
+            background: var(--emerald);
+        }
+
+        .goal-text {
+            flex: 1;
+            color: var(--soft-white);
+        }
+
+        .goal-text.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* 레벨 진행 카드 */
+        .level-card {
+            background: linear-gradient(135deg, rgba(74, 20, 140, 0.3) 0%, rgba(26, 10, 46, 0.5) 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out 0.2s backwards;
+        }
+
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .level-info h3 {
+            font-family: 'Cormorant Garamond', 'Noto Serif KR', serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .level-info .seal-name {
+            color: var(--light-gold);
+            opacity: 0.9;
+        }
+
+        .xp-text {
+            font-size: 1.1rem;
+            color: var(--light-gold);
+        }
+
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.3);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--gold) 0%, var(--light-gold) 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        /* 배지 섹션 */
+        .badges-section {
+            margin-bottom: 30px;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 20px;
+        }
+
+        .badge-card {
+            background: rgba(26, 10, 46, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .badge-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .badge-card.locked {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .badge-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .badge-name {
+            font-size: 0.9rem;
+            color: var(--light-gold);
+            margin-bottom: 5px;
+        }
+
+        .badge-desc {
+            font-size: 0.75rem;
+            color: var(--light-gold);
+            opacity: 0.7;
+        }
+
+        /* 학습 카드 */
+        .learning-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', 'Noto Serif KR', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .quiz-type-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .quiz-type-btn {
+            background: rgba(26, 10, 46, 0.5);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            color: var(--light-gold);
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .quiz-type-btn:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .quiz-type-btn.active {
+            background: linear-gradient(135deg, var(--gold) 0%, #c99b2e 100%);
+            color: var(--deep-purple);
+            border-color: var(--gold);
+            font-weight: 600;
+        }
+
+        .quiz-card {
+            background: rgba(26, 10, 46, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .verse-reference {
+            font-size: 1.1rem;
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .audio-btn {
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid var(--sapphire);
+            color: var(--sapphire);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .audio-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: scale(1.05);
+        }
+
+        .verse-text {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.3rem;
+            line-height: 2;
+            color: var(--soft-white);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 2px solid var(--gold);
+            margin: 0 5px;
+            padding: 0 10px;
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            color: var(--light-gold);
+            padding: 15px 20px;
+            font-size: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Serif KR', serif;
+        }
+
+        .option-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, var(--gold) 0%, #c99b2e 100%);
+            color: var(--deep-purple);
+            border-color: var(--gold);
+            font-weight: 600;
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border-color: #2ecc71;
+        }
+
+        .option-btn.wrong {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        /* 순서 맞추기 퀴즈 */
+        .sequence-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .sequence-item {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            color: var(--soft-white);
+            padding: 20px;
+            border-radius: 12px;
+            cursor: move;
+            transition: all 0.3s ease;
+            font-family: 'Noto Serif KR', serif;
+            user-select: none;
+        }
+
+        .sequence-item:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: translateX(5px);
+        }
+
+        .sequence-item.dragging {
+            opacity: 0.5;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--gold) 0%, #c99b2e 100%);
+            color: var(--deep-purple);
+            border: none;
+            padding: 16px 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 결과 메시지 */
+        .result-message {
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .result-message.correct {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .result-message.wrong {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        /* 리더보드 */
+        .leaderboard {
+            background: rgba(26, 10, 46, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateX(5px);
+        }
+
+        .rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-right: 20px;
+            min-width: 40px;
+        }
+
+        .rank.first { color: #FFD700; }
+        .rank.second { color: #C0C0C0; }
+        .rank.third { color: #CD7F32; }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--soft-white);
+            margin-bottom: 3px;
+        }
+
+        .user-level {
+            font-size: 0.9rem;
+            color: var(--light-gold);
+            opacity: 0.8;
+        }
+
+        .user-xp {
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        /* 친구 초대 섹션 */
+        .invite-section {
+            background: rgba(26, 10, 46, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .invite-code {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed var(--gold);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .invite-code-text {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            color: var(--gold);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            background: rgba(212, 175, 55, 0.2);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 10px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .invite-bonus {
+            text-align: center;
+            color: var(--emerald);
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* 사용자 프로필 */
+        .user-profile {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 10, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+        }
+
+        .user-name-display {
+            color: var(--light-gold);
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            background: rgba(139, 0, 0, 0.3);
+            border: 1px solid rgba(139, 0, 0, 0.5);
+            color: var(--light-gold);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(139, 0, 0, 0.5);
+        }
+
+        /* 탭 메뉴 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(26, 10, 46, 0.3);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            color: var(--light-gold);
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--gold) 0%, #c99b2e 100%);
+            color: var(--deep-purple);
+            border-color: var(--gold);
+        }
+
+        /* 알림 설정 카드 */
+        .notification-card {
+            background: rgba(26, 10, 46, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .notification-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--emerald);
+        }
+
+        .toggle-slider {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: 32px;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quiz-card {
+                padding: 30px 20px;
+            }
+
+            .user-profile {
+                position: static;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .badges-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+
+        /* 로딩 애니메이션 */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--gold);
+            font-size: 1.5rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(212, 175, 55, 0.2);
+            border-top: 4px solid var(--gold);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 토스트 알림 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(26, 10, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 20px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: slideInRight 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-color: var(--emerald);
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+        }
+
+        .toast-message {
+            color: var(--soft-white);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Firebase 설정 (실제 프로젝트에서는 환경 변수 사용)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // 요한계시록 구절 데이터 (확장됨)
+        const revelationVerses = [
+            // 1장
+            { chapter: 1, verse: 3, text: "이 예언의 말씀을 읽는 자와 듣는 자들과 그 가운데 기록한 것을 지키는 자들이 복이 있나니 때가 가까움이라", blanks: ["읽는", "듣는", "지키는"] },
+            { chapter: 1, verse: 7, text: "볼찌어다 구름을 타고 오시리라 각인의 눈이 그를 보겠고 그를 찌른 자들도 볼터이요 땅에 있는 모든 족속이 그를 인하여 애곡하리니 그러하리라 아멘", blanks: ["구름을 타고", "각인의 눈이", "애곡하리니"] },
+            { chapter: 1, verse: 8, text: "주 하나님이 가라사대 나는 알파와 오메가라 이제도 있고 전에도 있었고 장차 올 자요 전능한 자라 하시더라", blanks: ["알파와 오메가", "전능한", "처음과 나중"] },
+            
+            // 2장
+            { chapter: 2, verse: 7, text: "귀 있는 자는 성령이 교회들에게 하시는 말씀을 들을찌어다 이기는 그에게는 내가 하나님의 낙원에 있는 생명나무의 과실을 주어 먹게 하리라", blanks: ["성령이", "이기는", "생명나무"] },
+            { chapter: 2, verse: 10, text: "네가 장차 받을 고난을 두려워 말라 볼찌어다 마귀가 장차 너희 가운데서 몇 사람을 옥에 던져 시험을 받게 하리니 너희가 십일 동안 환난을 받으리라 네가 죽도록 충성하라 그리하면 내가 생명의 면류관을 네게 주리라", blanks: ["충성하라", "생명의 면류관", "십일 동안"] },
+            
+            // 3장
+            { chapter: 3, verse: 5, text: "이기는 자는 이와 같이 흰 옷을 입을 것이요 내가 그 이름을 생명책에서 반드시 흐리지 아니하고 그 이름을 내 아버지 앞과 그 사자들 앞에서 시인하리라", blanks: ["흰 옷을", "생명책에서", "시인하리라"] },
+            { chapter: 3, verse: 20, text: "볼찌어다 내가 문밖에 서서 두드리노니 누구든지 내 음성을 듣고 문을 열면 내가 그에게로 들어가 그로 더불어 먹고 그는 나로 더불어 먹으리라", blanks: ["문을 열면", "두드리노니", "함께 먹으리라"] },
+            
+            // 5장
+            { chapter: 5, verse: 5, text: "장로 중에 하나가 내게 말하되 울지 말라 유대 지파의 사자 다윗의 뿌리가 이기었으니 이 책과 그 일곱 인을 떼시리라 하더라", blanks: ["유대 지파의 사자", "다윗의 뿌리", "일곱 인을"] },
+            
+            // 7장
+            { chapter: 7, verse: 17, text: "이는 보좌 가운데 계신 어린 양이 저희의 목자가 되사 생명수 샘으로 인도하시고 하나님께서 저희 눈에서 모든 눈물을 씻어 주실 것임이러라", blanks: ["어린 양이", "생명수 샘으로", "눈물을 씻어"] },
+            
+            // 12장
+            { chapter: 12, verse: 11, text: "또 여러 형제가 어린 양의 피와 자기의 증거하는 말을 인하여 저를 이기었으니 그들은 죽기까지 자기 생명을 아끼지 아니하였도다", blanks: ["어린 양의 피와", "증거하는 말을", "생명을 아끼지"] },
+            
+            // 21장
+            { chapter: 21, verse: 1, text: "또 내가 새 하늘과 새 땅을 보니 처음 하늘과 처음 땅이 없어졌고 바다도 다시 있지 않더라", blanks: ["새 하늘과 새 땅을", "처음 하늘과 처음 땅이", "바다도"] },
+            { chapter: 21, verse: 4, text: "모든 눈물을 그 눈에서 씻기시매 다시 사망이 없고 애통하는 것이나 곡하는 것이나 아픈 것이 다시 있지 아니하리니 처음 것들이 다 지나갔음이러라", blanks: ["눈물을", "사망이", "처음 것들이"] },
+            { chapter: 21, verse: 6, text: "또 내게 말씀하시되 이루었도다 나는 알파와 오메가요 처음과 나중이라 내가 생명수 샘물로 목마른 자에게 값없이 주리니", blanks: ["알파와 오메가", "처음과 나중", "생명수 샘물로"] },
+            
+            // 22장
+            { chapter: 22, verse: 7, text: "보라 내가 속히 오리니 이 책의 예언의 말씀을 지키는 자가 복이 있으리라 하더라", blanks: ["속히 오리니", "예언의 말씀을", "복이 있으리라"] },
+            { chapter: 22, verse: 13, text: "나는 알파와 오메가요 처음과 나중이요 시작과 끝이라", blanks: ["알파와 오메가", "처음과 나중", "시작과 끝"] },
+            { chapter: 22, verse: 17, text: "성령과 신부가 말씀하시기를 오라 하시는도다 듣는 자도 오라 할 것이요 목마른 자도 올 것이요 또 원하는 자는 값없이 생명수를 받으라 하시더라", blanks: ["성령과 신부가", "생명수를", "값없이"] },
+        ];
+
+        // 배지 시스템
+        const badges = [
+            { id: 1, name: "첫 걸음", icon: "👣", description: "첫 구절 학습", requirement: (data) => data.versesLearned >= 1 },
+            { id: 2, name: "열정", icon: "🔥", description: "3일 연속 학습", requirement: (data) => data.streak >= 3 },
+            { id: 3, name: "헌신", icon: "⭐", description: "7일 연속 학습", requirement: (data) => data.streak >= 7 },
+            { id: 4, name: "인내", icon: "💪", description: "30일 연속 학습", requirement: (data) => data.streak >= 30 },
+            { id: 5, name: "학자", icon: "📚", description: "50구절 학습", requirement: (data) => data.versesLearned >= 50 },
+            { id: 6, name: "마스터", icon: "👑", description: "100구절 학습", requirement: (data) => data.versesLearned >= 100 },
+            { id: 7, name: "첫째 인", icon: "🔓", description: "레벨 1 달성", requirement: (data) => data.level >= 1 },
+            { id: 8, name: "셋째 인", icon: "🗝️", description: "레벨 3 달성", requirement: (data) => data.level >= 3 },
+            { id: 9, name: "일곱째 인", icon: "👼", description: "레벨 7 달성", requirement: (data) => data.level >= 7 },
+            { id: 10, name: "완벽주의자", icon: "💯", description: "10문제 연속 정답", requirement: (data) => data.perfectStreak >= 10 },
+            { id: 11, name: "전도사", icon: "🤝", description: "친구 3명 초대", requirement: (data) => data.friendsInvited >= 3 },
+            { id: 12, name: "새벽 학습자", icon: "🌅", description: "새벽 5시에 학습", requirement: (data) => data.earlyBirdCount >= 1 },
+        ];
+
+        // 일곱 인장 레벨 시스템
+        const seals = [
+            { level: 1, name: "첫째 인", xpRequired: 0 },
+            { level: 2, name: "둘째 인", xpRequired: 100 },
+            { level: 3, name: "셋째 인", xpRequired: 250 },
+            { level: 4, name: "넷째 인", xpRequired: 500 },
+            { level: 5, name: "다섯째 인", xpRequired: 1000 },
+            { level: 6, name: "여섯째 인", xpRequired: 2000 },
+            { level: 7, name: "일곱째 인", xpRequired: 5000 }
+        ];
+
+        // 퀴즈 타입
+        const QUIZ_TYPES = {
+            FILL_BLANK: 'fill_blank',
+            MULTIPLE_CHOICE: 'multiple_choice',
+            SEQUENCE: 'sequence'
+        };
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('learn');
+            const [quizType, setQuizType] = useState(QUIZ_TYPES.FILL_BLANK);
+            const [toast, setToast] = useState(null);
+            
+            // 사용자 데이터
+            const [userData, setUserData] = useState({
+                xp: 0,
+                streak: 0,
+                versesLearned: 0,
+                level: 1,
+                perfectStreak: 0,
+                friendsInvited: 0,
+                earlyBirdCount: 0,
+                dailyGoal: {
+                    verses: 0,
+                    targetVerses: 5,
+                    xp: 0,
+                    targetXP: 250
+                },
+                lastStudyDate: null,
+                notificationsEnabled: false
+            });
+
+            // 퀴즈 상태
+            const [currentVerse, setCurrentVerse] = useState(null);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [showResult, setShowResult] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [sequenceItems, setSequenceItems] = useState([]);
+            const [draggedItem, setDraggedItem] = useState(null);
+
+            // 리더보드 (샘플 데이터)
+            const [leaderboard, setLeaderboard] = useState([
+                { name: "김요한", level: 7, xp: 5420, streak: 45 },
+                { name: "이바울", level: 6, xp: 3280, streak: 32 },
+                { name: "박베드로", level: 5, xp: 1560, streak: 28 },
+                { name: "최마태", level: 4, xp: 820, streak: 15 },
+                { name: "정누가", level: 3, xp: 450, streak: 12 }
+            ]);
+
+            // 초대 코드
+            const [inviteCode, setInviteCode] = useState('REV-' + Math.random().toString(36).substr(2, 9).toUpperCase());
+
+            useEffect(() => {
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1000);
+
+                // 알림 권한 요청
+                if ('Notification' in window && Notification.permission === 'default') {
+                    // 사용자가 알림 탭을 방문하면 권한 요청
+                }
+            }, []);
+
+            useEffect(() => {
+                if (activeTab === 'learn' && !currentVerse) {
+                    loadNewVerse();
+                }
+            }, [activeTab, quizType]);
+
+            // 토스트 표시 함수
+            const showToast = (message, type = 'success') => {
+                setToast({ message, type });
+                setTimeout(() => setToast(null), 3000);
+            };
+
+            const handleGoogleLogin = () => {
+                setUser({
+                    displayName: "학습자",
+                    photoURL: "https://via.placeholder.com/40",
+                    uid: "demo-user-" + Date.now()
+                });
+                showToast("환영합니다! 계시록 마스터에 오신 것을 축하합니다! 🎉");
+            };
+
+            const handleLogout = () => {
+                setUser(null);
+                setUserData({
+                    xp: 0,
+                    streak: 0,
+                    versesLearned: 0,
+                    level: 1,
+                    perfectStreak: 0,
+                    friendsInvited: 0,
+                    earlyBirdCount: 0,
+                    dailyGoal: {
+                        verses: 0,
+                        targetVerses: 5,
+                        xp: 0,
+                        targetXP: 250
+                    },
+                    lastStudyDate: null,
+                    notificationsEnabled: false
+                });
+            };
+
+            const loadNewVerse = () => {
+                const randomVerse = revelationVerses[Math.floor(Math.random() * revelationVerses.length)];
+                
+                if (quizType === QUIZ_TYPES.SEQUENCE) {
+                    // 구절을 단어로 분리하여 섞기
+                    const words = randomVerse.text.split(' ');
+                    const shuffled = [...words].sort(() => Math.random() - 0.5);
+                    setSequenceItems(shuffled.map((word, idx) => ({ id: idx, text: word, originalIndex: words.indexOf(word) })));
+                }
+                
+                setCurrentVerse(randomVerse);
+                setSelectedOption(null);
+                setShowResult(false);
+                setIsCorrect(false);
+            };
+
+            const handleOptionSelect = (index) => {
+                if (!showResult) {
+                    setSelectedOption(index);
+                }
+            };
+
+            const handleSubmit = () => {
+                if (quizType === QUIZ_TYPES.SEQUENCE) {
+                    // 순서 맞추기 검증
+                    const isSequenceCorrect = sequenceItems.every((item, idx) => item.originalIndex === idx);
+                    setIsCorrect(isSequenceCorrect);
+                    setShowResult(true);
+                    
+                    if (isSequenceCorrect) {
+                        updateUserProgress(75); // 순서 맞추기는 더 어려우므로 더 많은 XP
+                    }
+                } else {
+                    if (selectedOption === null) return;
+
+                    const correct = selectedOption === 0; // 첫 번째 옵션이 항상 정답이라고 가정
+                    setIsCorrect(correct);
+                    setShowResult(true);
+
+                    if (correct) {
+                        const xpGain = quizType === QUIZ_TYPES.MULTIPLE_CHOICE ? 40 : 50;
+                        updateUserProgress(xpGain);
+                    }
+                }
+            };
+
+            const updateUserProgress = (xpGain) => {
+                const newXP = userData.xp + xpGain;
+                const newVersesLearned = userData.versesLearned + 1;
+                const newPerfectStreak = isCorrect ? userData.perfectStreak + 1 : 0;
+                
+                // 레벨 계산
+                let newLevel = 1;
+                for (let i = seals.length - 1; i >= 0; i--) {
+                    if (newXP >= seals[i].xpRequired) {
+                        newLevel = seals[i].level;
+                        break;
+                    }
+                }
+
+                // 레벨업 확인
+                if (newLevel > userData.level) {
+                    showToast(`🎊 레벨업! ${seals.find(s => s.level === newLevel).name}을 열었습니다!`, 'success');
+                }
+
+                // 일일 목표 업데이트
+                const newDailyGoal = {
+                    verses: userData.dailyGoal.verses + 1,
+                    targetVerses: userData.dailyGoal.targetVerses,
+                    xp: userData.dailyGoal.xp + xpGain,
+                    targetXP: userData.dailyGoal.targetXP
+                };
+
+                // 일일 목표 달성 확인
+                if (newDailyGoal.verses === newDailyGoal.targetVerses) {
+                    showToast('🎯 일일 목표 달성! 축하합니다!', 'success');
+                }
+
+                setUserData({
+                    ...userData,
+                    xp: newXP,
+                    versesLearned: newVersesLearned,
+                    level: newLevel,
+                    perfectStreak: newPerfectStreak,
+                    dailyGoal: newDailyGoal
+                });
+            };
+
+            const handleNextVerse = () => {
+                loadNewVerse();
+            };
+
+            const getCurrentSeal = () => {
+                return seals.find(seal => seal.level === userData.level) || seals[0];
+            };
+
+            const getNextSeal = () => {
+                return seals.find(seal => seal.level === userData.level + 1) || seals[seals.length - 1];
+            };
+
+            const getProgressPercentage = () => {
+                const currentSeal = getCurrentSeal();
+                const nextSeal = getNextSeal();
+                const xpInCurrentLevel = userData.xp - currentSeal.xpRequired;
+                const xpNeededForNext = nextSeal.xpRequired - currentSeal.xpRequired;
+                return Math.min((xpInCurrentLevel / xpNeededForNext) * 100, 100);
+            };
+
+            const getUnlockedBadges = () => {
+                return badges.filter(badge => badge.requirement(userData));
+            };
+
+            const speakVerse = (text) => {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'ko-KR';
+                    utterance.rate = 0.9;
+                    window.speechSynthesis.speak(utterance);
+                    showToast('🔊 구절을 낭독합니다', 'success');
+                } else {
+                    showToast('이 브라우저는 음성 기능을 지원하지 않습니다', 'error');
+                }
+            };
+
+            const copyInviteCode = () => {
+                navigator.clipboard.writeText(inviteCode);
+                showToast('초대 코드가 복사되었습니다! 📋', 'success');
+            };
+
+            const requestNotificationPermission = async () => {
+                if ('Notification' in window) {
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                        setUserData({ ...userData, notificationsEnabled: true });
+                        showToast('알림이 활성화되었습니다! 🔔', 'success');
+                        
+                        // 테스트 알림
+                        new Notification('계시록 마스터', {
+                            body: '매일 학습하여 일곱 인장을 여세요!',
+                            icon: '📖'
+                        });
+                    }
+                }
+            };
+
+            const toggleNotifications = () => {
+                if (!userData.notificationsEnabled) {
+                    requestNotificationPermission();
+                } else {
+                    setUserData({ ...userData, notificationsEnabled: false });
+                    showToast('알림이 비활성화되었습니다', 'success');
+                }
+            };
+
+            // 드래그 앤 드롭 핸들러
+            const handleDragStart = (e, item) => {
+                setDraggedItem(item);
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            const handleDragOver = (e, targetItem) => {
+                e.preventDefault();
+                if (draggedItem === targetItem) return;
+
+                const newItems = [...sequenceItems];
+                const draggedIdx = newItems.findIndex(i => i.id === draggedItem.id);
+                const targetIdx = newItems.findIndex(i => i.id === targetItem.id);
+
+                newItems.splice(draggedIdx, 1);
+                newItems.splice(targetIdx, 0, draggedItem);
+                
+                setSequenceItems(newItems);
+            };
+
+            const handleDragEnd = () => {
+                setDraggedItem(null);
+            };
+
+            if (loading) {
+                return (
+                    <div className="app-container">
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            로딩 중...
+                        </div>
+                    </div>
+                );
+            }
+
+            if (!user) {
+                return (
+                    <div className="app-container">
+                        <div className="header">
+                            <h1>계시록 마스터</h1>
+                            <p className="subtitle">요한계시록을 암기하여 일곱 인장을 여세요</p>
+                        </div>
+                        <div className="login-card">
+                            <h2>환영합니다</h2>
+                            <p>
+                                듀오링고처럼 매일 학습하고 레벨업하세요.<br/>
+                                요한계시록의 모든 구절을 마스터하고<br/>
+                                일곱 인장을 모두 여는 그날까지!
+                            </p>
+                            <button className="btn-google" onClick={handleGoogleLogin}>
+                                🔐 Google로 시작하기
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="app-container">
+                    <div className="user-profile">
+                        <img src={user.photoURL} alt={user.displayName} className="user-avatar" />
+                        <span className="user-name-display">{user.displayName}</span>
+                        <button className="btn-logout" onClick={handleLogout}>로그아웃</button>
+                    </div>
+
+                    <div className="header">
+                        <h1>계시록 마스터</h1>
+                        <p className="subtitle">요한계시록을 암기하여 일곱 인장을 여세요</p>
+                    </div>
+
+                    <div className="tabs">
+                        <button 
+                            className={`tab-btn ${activeTab === 'learn' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('learn')}
+                        >
+                            📖 학습하기
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('stats')}
+                        >
+                            📊 내 통계
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'badges' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('badges')}
+                        >
+                            🏅 배지
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('leaderboard')}
+                        >
+                            🏆 리더보드
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'social' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('social')}
+                        >
+                            🤝 친구 초대
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('settings')}
+                        >
+                            ⚙️ 설정
+                        </button>
+                    </div>
+
+                    {activeTab === 'stats' && (
+                        <>
+                            {/* 일일 목표 */}
+                            <div className="daily-goal-card">
+                                <div className="goal-header">
+                                    <h3>오늘의 목표</h3>
+                                    <span className="goal-status">
+                                        {userData.dailyGoal.verses}/{userData.dailyGoal.targetVerses} 완료
+                                    </span>
+                                </div>
+                                <div className="goal-items">
+                                    <div className="goal-item">
+                                        <div className={`goal-checkbox ${userData.dailyGoal.verses >= userData.dailyGoal.targetVerses ? 'completed' : ''}`}>
+                                            {userData.dailyGoal.verses >= userData.dailyGoal.targetVerses && '✓'}
+                                        </div>
+                                        <div className={`goal-text ${userData.dailyGoal.verses >= userData.dailyGoal.targetVerses ? 'completed' : ''}`}>
+                                            {userData.dailyGoal.targetVerses}개의 구절 학습하기
+                                        </div>
+                                    </div>
+                                    <div className="goal-item">
+                                        <div className={`goal-checkbox ${userData.dailyGoal.xp >= userData.dailyGoal.targetXP ? 'completed' : ''}`}>
+                                            {userData.dailyGoal.xp >= userData.dailyGoal.targetXP && '✓'}
+                                        </div>
+                                        <div className={`goal-text ${userData.dailyGoal.xp >= userData.dailyGoal.targetXP ? 'completed' : ''}`}>
+                                            {userData.dailyGoal.targetXP} XP 획득하기
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="stats-grid">
+                                <div className="stat-card">
+                                    <div className="icon">⚡</div>
+                                    <div className="value">{userData.streak}</div>
+                                    <div className="label">연속 학습일</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="icon">📚</div>
+                                    <div className="value">{userData.versesLearned}</div>
+                                    <div className="label">학습한 구절</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="icon">✨</div>
+                                    <div className="value">{userData.xp}</div>
+                                    <div className="label">총 경험치</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="icon">🔓</div>
+                                    <div className="value">{userData.level}</div>
+                                    <div className="label">현재 인장</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="icon">🎯</div>
+                                    <div className="value">{userData.perfectStreak}</div>
+                                    <div className="label">연속 정답</div>
+                                </div>
+                            </div>
+
+                            <div className="level-card">
+                                <div className="level-header">
+                                    <div className="level-info">
+                                        <h3>레벨 {userData.level}</h3>
+                                        <p className="seal-name">{getCurrentSeal().name}</p>
+                                    </div>
+                                    <div className="xp-text">
+                                        {userData.xp} / {getNextSeal().xpRequired} XP
+                                    </div>
+                                </div>
+                                <div className="progress-bar">
+                                    <div 
+                                        className="progress-fill" 
+                                        style={{ width: `${getProgressPercentage()}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {activeTab === 'badges' && (
+                        <div className="learning-section">
+                            <h2 className="section-title">획득한 배지</h2>
+                            <div className="badges-section">
+                                <div className="badges-grid">
+                                    {badges.map(badge => {
+                                        const unlocked = badge.requirement(userData);
+                                        return (
+                                            <div 
+                                                key={badge.id} 
+                                                className={`badge-card ${unlocked ? '' : 'locked'}`}
+                                                title={badge.description}
+                                            >
+                                                <div className="badge-icon">{badge.icon}</div>
+                                                <div className="badge-name">{badge.name}</div>
+                                                <div className="badge-desc">{badge.description}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'learn' && currentVerse && (
+                        <div className="learning-section">
+                            <h2 className="section-title">오늘의 구절 학습</h2>
+                            
+                            <div className="quiz-type-selector">
+                                <button 
+                                    className={`quiz-type-btn ${quizType === QUIZ_TYPES.FILL_BLANK ? 'active' : ''}`}
+                                    onClick={() => { setQuizType(QUIZ_TYPES.FILL_BLANK); loadNewVerse(); }}
+                                >
+                                    📝 빈칸 채우기
+                                </button>
+                                <button 
+                                    className={`quiz-type-btn ${quizType === QUIZ_TYPES.MULTIPLE_CHOICE ? 'active' : ''}`}
+                                    onClick={() => { setQuizType(QUIZ_TYPES.MULTIPLE_CHOICE); loadNewVerse(); }}
+                                >
+                                    ✅ 객관식
+                                </button>
+                                <button 
+                                    className={`quiz-type-btn ${quizType === QUIZ_TYPES.SEQUENCE ? 'active' : ''}`}
+                                    onClick={() => { setQuizType(QUIZ_TYPES.SEQUENCE); loadNewVerse(); }}
+                                >
+                                    🔢 순서 맞추기
+                                </button>
+                            </div>
+
+                            <div className="quiz-card">
+                                <div className="quiz-header">
+                                    <div className="verse-reference">
+                                        요한계시록 {currentVerse.chapter}:{currentVerse.verse}
+                                    </div>
+                                    <button 
+                                        className="audio-btn"
+                                        onClick={() => speakVerse(currentVerse.text)}
+                                    >
+                                        🔊 듣기
+                                    </button>
+                                </div>
+
+                                {quizType === QUIZ_TYPES.SEQUENCE ? (
+                                    <>
+                                        <div className="verse-text" style={{ marginBottom: '30px', opacity: 0.5 }}>
+                                            올바른 순서로 정렬하세요
+                                        </div>
+                                        <div className="sequence-container">
+                                            {sequenceItems.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className={`sequence-item ${draggedItem?.id === item.id ? 'dragging' : ''}`}
+                                                    draggable
+                                                    onDragStart={(e) => handleDragStart(e, item)}
+                                                    onDragOver={(e) => handleDragOver(e, item)}
+                                                    onDragEnd={handleDragEnd}
+                                                >
+                                                    {item.text}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="verse-text">
+                                            {currentVerse.text.split(currentVerse.blanks[0])[0]}
+                                            <span className="blank">
+                                                {showResult ? currentVerse.blanks[0] : '____'}
+                                            </span>
+                                            {currentVerse.text.split(currentVerse.blanks[0])[1]}
+                                        </div>
+
+                                        <div className="options-grid">
+                                            {currentVerse.blanks.map((option, index) => (
+                                                <button
+                                                    key={index}
+                                                    className={`option-btn ${
+                                                        selectedOption === index ? 'selected' : ''
+                                                    } ${
+                                                        showResult && index === 0 ? 'correct' : ''
+                                                    } ${
+                                                        showResult && selectedOption === index && !isCorrect ? 'wrong' : ''
+                                                    }`}
+                                                    onClick={() => handleOptionSelect(index)}
+                                                    disabled={showResult}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {showResult && (
+                                    <div className={`result-message ${isCorrect ? 'correct' : 'wrong'}`}>
+                                        {isCorrect ? 
+                                            `🎉 정답입니다! +${quizType === QUIZ_TYPES.SEQUENCE ? 75 : quizType === QUIZ_TYPES.FILL_BLANK ? 50 : 40} XP` : 
+                                            '❌ 다시 도전해보세요!'
+                                        }
+                                    </div>
+                                )}
+
+                                {!showResult ? (
+                                    <button 
+                                        className="submit-btn" 
+                                        onClick={handleSubmit}
+                                        disabled={quizType !== QUIZ_TYPES.SEQUENCE && selectedOption === null}
+                                    >
+                                        답안 제출
+                                    </button>
+                                ) : (
+                                    <button className="submit-btn" onClick={handleNextVerse}>
+                                        다음 구절 →
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'leaderboard' && (
+                        <div className="learning-section">
+                            <h2 className="section-title">🏆 리더보드</h2>
+                            <div className="leaderboard">
+                                {leaderboard.map((player, index) => (
+                                    <div key={index} className="leaderboard-item">
+                                        <div className={`rank ${
+                                            index === 0 ? 'first' : index === 1 ? 'second' : index === 2 ? 'third' : ''
+                                        }`}>
+                                            #{index + 1}
+                                        </div>
+                                        <div className="user-info">
+                                            <div className="user-name">{player.name}</div>
+                                            <div className="user-level">
+                                                레벨 {player.level} • {seals.find(s => s.level === player.level)?.name} • {player.streak}일 연속
+                                            </div>
+                                        </div>
+                                        <div className="user-xp">{player.xp} XP</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'social' && (
+                        <div className="learning-section">
+                            <h2 className="section-title">친구 초대하기</h2>
+                            <div className="invite-section">
+                                <p style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--light-gold)' }}>
+                                    친구를 초대하고 함께 성장하세요!<br/>
+                                    친구가 가입하면 보너스 XP를 받습니다.
+                                </p>
+                                <div className="invite-code">
+                                    <div className="invite-code-text">{inviteCode}</div>
+                                    <button className="copy-btn" onClick={copyInviteCode}>
+                                        📋 코드 복사
+                                    </button>
+                                </div>
+                                <div className="invite-bonus">
+                                    친구 1명 초대 시 +100 XP 획득!
+                                </div>
+                                <div style={{ marginTop: '30px' }}>
+                                    <h3 style={{ color: 'var(--gold)', marginBottom: '15px' }}>초대한 친구들</h3>
+                                    <p style={{ textAlign: 'center', color: 'var(--light-gold)', opacity: 0.7 }}>
+                                        아직 초대한 친구가 없습니다.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'settings' && (
+                        <div className="learning-section">
+                            <h2 className="section-title">설정</h2>
+                            <div className="notification-card">
+                                <h3 style={{ color: 'var(--gold)', marginBottom: '20px' }}>알림 설정</h3>
+                                <div className="notification-toggle">
+                                    <div>
+                                        <div style={{ fontWeight: 600, marginBottom: '5px' }}>일일 학습 알림</div>
+                                        <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                                            매일 정해진 시간에 학습 리마인더를 받습니다
+                                        </div>
+                                    </div>
+                                    <div 
+                                        className={`toggle-switch ${userData.notificationsEnabled ? 'active' : ''}`}
+                                        onClick={toggleNotifications}
+                                    >
+                                        <div className="toggle-slider"></div>
+                                    </div>
+                                </div>
+                                
+                                <div style={{ marginTop: '30px' }}>
+                                    <h3 style={{ color: 'var(--gold)', marginBottom: '15px' }}>일일 목표</h3>
+                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px' }}>
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <label style={{ display: 'block', marginBottom: '10px' }}>하루 학습 구절 수</label>
+                                            <input 
+                                                type="number" 
+                                                value={userData.dailyGoal.targetVerses}
+                                                onChange={(e) => setUserData({
+                                                    ...userData,
+                                                    dailyGoal: { ...userData.dailyGoal, targetVerses: parseInt(e.target.value) }
+                                                })}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px',
+                                                    borderRadius: '8px',
+                                                    border: '2px solid rgba(212, 175, 55, 0.3)',
+                                                    background: 'rgba(0, 0, 0, 0.3)',
+                                                    color: 'var(--soft-white)',
+                                                    fontSize: '1rem'
+                                                }}
+                                                min="1"
+                                                max="20"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '10px' }}>하루 목표 XP</label>
+                                            <input 
+                                                type="number" 
+                                                value={userData.dailyGoal.targetXP}
+                                                onChange={(e) => setUserData({
+                                                    ...userData,
+                                                    dailyGoal: { ...userData.dailyGoal, targetXP: parseInt(e.target.value) }
+                                                })}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px',
+                                                    borderRadius: '8px',
+                                                    border: '2px solid rgba(212, 175, 55, 0.3)',
+                                                    background: 'rgba(0, 0, 0, 0.3)',
+                                                    color: 'var(--soft-white)',
+                                                    fontSize: '1rem'
+                                                }}
+                                                min="50"
+                                                max="1000"
+                                                step="50"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {toast && (
+                        <div className={`toast ${toast.type}`}>
+                            <div className="toast-content">
+                                <span className="toast-icon">{toast.type === 'success' ? '✅' : '❌'}</span>
+                                <span className="toast-message">{toast.message}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
